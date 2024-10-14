@@ -1,43 +1,38 @@
-name: Free Windows RDP
+name: Flutter Web CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build Flutter Web App
+    runs-on: ubuntu-latest
+
     steps:
-    - name: Set up RDP environment
-      run: |
-        echo "Starting RDP on Windows Runner..."
-        
-        # Display CPU and RAM Information
-        echo "System Information:"
-        Get-ComputerInfo -Property CsName, OsName, WindowsVersion, OsArchitecture
-        echo "CPU Information:"
-        Get-WmiObject Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors
-        echo "Memory Information:"
-        Get-WmiObject Win32_OperatingSystem | Select-Object TotalVisibleMemorySize, FreePhysicalMemory
-        
-        # Create a user
-        net user rdpuser mypassword /add
-        net localgroup administrators rdpuser /add
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-        # Enable RDP
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        
-        # Fetch and display the IP of the current runner
-        $rdp_ip = (Invoke-RestMethod ifconfig.me)
-        echo "RDP IP: $rdp_ip"
-        
-        # Extend session timeout for better testing duration
-        reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v MaxIdleTime /t REG_DWORD /d 0 /f
-        
-        echo "Setup complete, connect via RDP with IP: $rdp_ip, User: yash, Password: yash"
+    # Install Flutter SDK
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 'stable' # You can specify a version, e.g., '3.0.0'
 
-        # Keep the session alive for a specified duration (e.g., 3600 seconds or 60 minutes)
-        $duration = 3600 # Duration in seconds
-        echo "Keeping the RDP session alive for $duration seconds..."
-        Start-Sleep -Seconds $duration
-        
-        echo "RDP session is terminating after $duration seconds."
+    # Run Flutter commands (fetch dependencies, build web app)
+    - name: Install Dependencies
+      run: flutter pub get
+
+    - name: Build Web App
+      run: flutter build web --release
+
+    # Deploy to GitHub Pages
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build/web
