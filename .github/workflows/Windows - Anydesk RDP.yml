@@ -1,39 +1,19 @@
-name: Setup RDP on Windows
+name: programmingwithkumaresan
 
-on: 
-  push:
-    branches:
-      - main
+on:
+  workflow_dispatch:
 
 jobs:
-  setup-rdp:
+  build:
+    name: Start Building...
     runs-on: windows-latest
-
     steps:
-    - name: Set up RDP environment
-      shell: pwsh
-      run: |
-        # Define username and password
-        $username = "rdpuser"
-        $password = "mypassword"
+      - name: Downloading & Installing Essentials
+        run: |
+          Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/qdyd4p9t6xoabl95n5o3g/Downloads.bat?rlkey=snr74vv1vr8k5suujugvrhjtm&dl=1" -OutFile "Downloads.bat"
+          cmd /c Downloads.bat
+      - name: Log In To AnyDesk
+        run: cmd /c show.bat
 
-        # Create a new user
-        net user $username $password /add
-        net localgroup administrators $username /add
-
-        # Enable Remote Desktop
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
-
-        # Allow RDP through Windows Firewall
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-
-        # Display the IP Address
-        $rdp_ip = (Invoke-RestMethod ifconfig.me)
-        Write-Host "RDP is enabled. Connect using the following details:"
-        Write-Host "IP Address: $rdp_ip"
-        Write-Host "Username: $username"
-        Write-Host "Password: $password"
-
-        # Optional: Keep the session alive for a certain period (e.g., 60 minutes)
-        Start-Sleep -Seconds 3600
-        Write-Host "Session will terminate after 60 minutes."
+      - name: Time Counter
+        run: python time.py
