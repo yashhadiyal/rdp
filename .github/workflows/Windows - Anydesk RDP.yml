@@ -1,38 +1,39 @@
-name: Flutter Web CI
+name: Setup RDP on Windows
 
-on:
+on: 
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
 jobs:
-  build:
-    name: Build Flutter Web App
-    runs-on: ubuntu-latest
+  setup-rdp:
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+    - name: Set up RDP environment
+      shell: pwsh
+      run: |
+        # Define username and password
+        $username = "rdpuser"
+        $password = "mypassword"
 
-    # Install Flutter SDK
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: 'stable' # You can specify a version, e.g., '3.0.0'
+        # Create a new user
+        net user $username $password /add
+        net localgroup administrators $username /add
 
-    # Run Flutter commands (fetch dependencies, build web app)
-    - name: Install Dependencies
-      run: flutter pub get
+        # Enable Remote Desktop
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
 
-    - name: Build Web App
-      run: flutter build web --release
+        # Allow RDP through Windows Firewall
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    # Deploy to GitHub Pages
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build/web
+        # Display the IP Address
+        $rdp_ip = (Invoke-RestMethod ifconfig.me)
+        Write-Host "RDP is enabled. Connect using the following details:"
+        Write-Host "IP Address: $rdp_ip"
+        Write-Host "Username: $username"
+        Write-Host "Password: $password"
+
+        # Optional: Keep the session alive for a certain period (e.g., 60 minutes)
+        Start-Sleep -Seconds 3600
+        Write-Host "Session will terminate after 60 minutes."
