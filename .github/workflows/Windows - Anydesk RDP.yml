@@ -33,7 +33,7 @@ jobs:
         # Extend session timeout for better testing duration
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v MaxIdleTime /t REG_DWORD /d 0 /f
         
-        echo "Setup complete, connect via RDP with IP: $rdp_ip, User: rdpuser, Password: mypassword"
+        echo "Setup complete, connect via RDP with IP: $rdp_ip, User: yash, Password: yash"
 
         # Keep the session alive for a specified duration (e.g., 3600 seconds or 60 minutes)
         $duration = 3600 # Duration in seconds
