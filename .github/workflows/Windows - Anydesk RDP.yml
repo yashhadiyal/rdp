@@ -22,9 +22,9 @@ jobs:
           curl -s -L -o shutdown.bat https://your-direct-url/shutdown.bat
           powershell -Command "Invoke-WebRequest 'https://github.com/chieunhatnang/VM-QuickConfig/releases/download/1.6.1/VMQuickConfig.exe' -OutFile 'C:\Users\Public\Desktop\VMQuickConfig.exe'"
           
-          # Clean up Desktop shortcuts
-          del /f "C:\Users\Public\Desktop\Epic Games Launcher.lnk" > errormsg.txt 2>&1
-          del /f "C:\Users\Public\Desktop\Unity Hub.lnk" > errormsg.txt 2>&1
+          # Clean up Desktop shortcuts using PowerShell's Remove-Item
+          powershell -Command "Remove-Item 'C:\Users\Public\Desktop\Epic Games Launcher.lnk' -Force -ErrorAction SilentlyContinue"
+          powershell -Command "Remove-Item 'C:\Users\Public\Desktop\Unity Hub.lnk' -Force -ErrorAction SilentlyContinue"
 
       - name: Set Password and Timezone
         run: |
